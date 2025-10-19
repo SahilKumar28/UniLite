@@ -17,20 +17,22 @@ export async function GET(request: Request) {
                 message: 'Topic field is missing'
             }, { status: 200 })
         }
+        const requiredTopicDoc = await resourceModel.findOne({ topic: requiredTopic, semester: no })
 
-        const requiredTopicResources = await resourceModel.find({ topic: requiredTopic, semester: no })
+        console.log(requiredTopicDoc)
 
-        if (!requiredTopicResources) {
+        if (!requiredTopicDoc) {
             return Response.json({
                 success: false,
                 message: 'No resources found'
             }, { status: 200 })
         }
 
+
         return Response.json({
             success: true,
             message: 'Resources fetched successfully',
-            resources: requiredTopicResources
+            requiredTopicDoc
         }, { status: 200 })
 
     } catch (error) {

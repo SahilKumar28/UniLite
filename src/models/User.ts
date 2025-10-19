@@ -22,13 +22,13 @@ const userSchema = new mongoose.Schema({
         type: String
     },
 
-    contributed: [mongoose.Schema.Types.ObjectId],
+    contributed: [{ resourceId: mongoose.Schema.Types.ObjectId, linkId: mongoose.Schema.Types.ObjectId }],
 
-    pushed: [mongoose.Schema.Types.ObjectId],
+    pushed: [{ resourceId: mongoose.Schema.Types.ObjectId, linkId: mongoose.Schema.Types.ObjectId }],
 
-    pulled: [mongoose.Schema.Types.ObjectId],
+    pulled: [{ resourceId: mongoose.Schema.Types.ObjectId, linkId: mongoose.Schema.Types.ObjectId }],
 
-    cart: [mongoose.Schema.Types.ObjectId]
+    cart: [{ resourceId: mongoose.Schema.Types.ObjectId, linkId: mongoose.Schema.Types.ObjectId }]
 })
 
 const userModel = mongoose.models.User || mongoose.model("User", userSchema)

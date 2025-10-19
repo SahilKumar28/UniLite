@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/dbConnect"
 import resourceModel from "@/models/Resource"
 import userModel from "@/models/User"
-import mongoose from "mongoose"
 
 
 export async function POST(request: Request) {
@@ -19,27 +18,52 @@ export async function POST(request: Request) {
             }, { status: 200 })
         }
 
-        console.log(userId)
-
-
-        const newResource = new resourceModel({
-            semester,
-            topic,
-            description,
+        const newLink = {
             link,
             contributedBy: userId ? userId : undefined,
             pushed: [],
+            description,
             pulled: []
-        })
-        
-
-        await newResource.save()
-
-        if(userId) {
-            const user = await userModel.findById(userId)
-            user.contributed.push(newResource._id)
-            await user.save()
         }
+        const sameTopicExist = await resourceModel.findOne({ topic: topic })
+
+
+        if (sameTopicExist) {
+            sameTopicExist.links.push(newLink)
+            await sameTopicExist.save()
+
+            if(userId) {
+                const user = await userModel.findById(userId)
+                const addedResource = sameTopicExist.links[sameTopicExist.links.length-1]
+                user.contributed.push( { resourceId: sameTopicExist._id, linkId: addedResource._id } )
+                await user.save()
+            }
+        }
+
+        else {
+            const newResource = new resourceModel({
+                semester,
+                topic,
+                description,
+                links: [{
+                    link,
+                    contributedBy: userId ? userId : undefined,
+                    pushed: [],
+                    pulled: [],
+                    description
+                }]
+
+            })
+
+            await newResource.save()
+            if (userId) {
+                const user = await userModel.findById(userId)
+                const addedResource = newResource.links[0]
+                user.contributed.push({ resourceId: newResource._id, linkId: addedResource._id })
+                await user.save()
+            }
+        }
+
 
         return Response.json({
             success: true,

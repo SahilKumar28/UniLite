@@ -27,8 +27,11 @@ import {
 } from "@/components/ui/card"
 import { Switch } from '@/components/ui/switch'
 import { useContext, useState } from 'react'
-import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { DropdownMenuContent, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 import { Label } from '@/components/ui/label'
 import axios from 'axios'
 import { toast } from "sonner"
@@ -38,7 +41,7 @@ import { AuthContext } from '@/contexts/AuthContext'
 const page = () => {
 
 
-  const [links, setLinks] = useState([{ description: 'Learn Binary Search In Depth', href: 'https://ui.shadcn.com/docs/components/alert', push: '404', pull: '10' }])
+  const [links, setLinks] = useState([{ description: 'Learn Binary Search In Depth', link: 'https://ui.shadcn.com/docs/components/alert', pushedBy: [], pulledBy: [] }])
   const [switchState, setSwitchState] = useState(Array(links.length).fill(false))
   const [semester, setSemester] = useState("")
   const [topic, setTopic] = useState("")
@@ -102,9 +105,10 @@ const page = () => {
       const response = await axios.get("/api/resources/getResources", {
         params: { requiredTopic, no }
       })
-      setLinks(response.data.resources)
-      setSwitchState(Array(response.data.resources.length).fill(false))
-      setLiked(Array(response.data.resources.length).fill('0'))
+      const linkArray = response.data.requiredTopicDoc.links
+      setLinks(linkArray)
+      setSwitchState(Array(linkArray.length).fill(false))
+      setLiked(Array(linkArray.length).fill('0'))
       if (response.data.success) {
         toast("Resources fetched successfully")
         setRequiredTopic("")
@@ -217,9 +221,9 @@ const page = () => {
       </motion.div>
 
       <div className='flex flex-wrap gap-20 justify-center items-center'>
-        {links.map((link, idx) => (
+        {links.map((obj, idx) => (
           <Alert className='w-[300px] flex justify-between relative' key={idx}>
-            <AlertTitle>{link.description}</AlertTitle>
+            <AlertTitle>{obj.description}</AlertTitle>
             <Switch
               checked={switchState[idx]}
               onCheckedChange={() => handleToggle(idx)}
@@ -231,7 +235,7 @@ const page = () => {
                 animate={{ width: 290, opacity: 1 }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
                 onAnimationComplete={() => {
-                  window.open(link.href, "_blank");
+                  window.open(obj.link, "_blank");
                   handleToggle(idx);
                 }}
               />
@@ -247,7 +251,7 @@ const page = () => {
                   className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === '1' ? 'scale-125' : 'scale-100'
                     }`}
                 />
-                Push {links[idx].push}
+                Push {links[idx].pushedBy.length}
               </Button>
 
               <Button
@@ -259,7 +263,7 @@ const page = () => {
                   className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === '-1' ? 'scale-125' : 'scale-100'
                     }`}
                 />
-                Pull {links[idx].pull}
+                Pull {links[idx].pulledBy.length}
               </Button>
             </div>
 
