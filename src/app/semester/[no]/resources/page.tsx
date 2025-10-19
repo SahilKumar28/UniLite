@@ -8,6 +8,17 @@ import {
   AlertTitle,
 } from "@/components/ui/alert"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Card,
   CardContent,
   CardFooter,
@@ -15,13 +26,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Switch } from '@/components/ui/switch'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { DropdownMenuContent, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import { Label } from '@/components/ui/label'
 import axios from 'axios'
 import { toast } from "sonner"
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { AuthContext } from '@/contexts/AuthContext'
 
 const page = () => {
 
@@ -37,9 +49,14 @@ const page = () => {
   const [addingResourceMessage, setAddingResourceMessage] = useState("")
   const [requiredTopic, setRequiredTopic] = useState("")
   const [liked, setLiked] = useState(Array(links.length).fill('0'))
+  const [shownAddResourceSignedOutAlert, setshownAddResourceSignedOutAlert] = useState(false)
 
   const params = useParams()
+  const router = useRouter()
+
   const { no } = params
+
+  const { user, loading } = useContext(AuthContext)
 
 
   const handleToggle = (idx: Number) => {
@@ -50,11 +67,17 @@ const page = () => {
     setLiked((prev) => prev.map((val, i) => i === idx ? updatedVal : val))
   }
 
-  const handleAddResource = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddResource = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+
+    if (!user && shownAddResourceSignedOutAlert === false) {
+      setshownAddResourceSignedOutAlert(true)
+      return
+    }
+
     setAddingResource(true)
     try {
-      const response = await axios.post("/api/resources/addResource", { semester, topic, description, link })
+      const response = await axios.post("/api/resources/addResource", { semester, topic, description, link, userId: user?._id || "" })
       if (response.data.success) {
         toast(response.data.message)
         setSemester("")
@@ -68,6 +91,7 @@ const page = () => {
     }
     finally {
       setAddingResource(false)
+      setshownAddResourceSignedOutAlert(false)
     }
   }
 
@@ -157,9 +181,29 @@ const page = () => {
                         onChange={(e) => setLink(e.target.value)}
                       />
                     </div>
+
                     <Button type="submit" className="w-full" disabled={addingResource}>
                       {addingResource ? <Loader2 className='animate-spin' /> : 'Contribue'}
                     </Button>
+
+
+                    <AlertDialog open={shownAddResourceSignedOutAlert} onOpenChange={setshownAddResourceSignedOutAlert}>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Take a second, dear?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Let others know it was you behind this gold...
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => {
+                            router.replace("/auth/sign-in")
+                          }}>Signin page, please</AlertDialogCancel>
+                          <AlertDialogAction onClick={(e) => handleAddResource(e)}>I am selfless</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
                   </div>
                 </form>
               </CardContent>

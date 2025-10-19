@@ -1,9 +1,11 @@
 'use client'
 
 import axios from "axios"
+import mongoose from "mongoose"
 import { createContext, ReactNode, useEffect, useState } from "react"
 
 interface User {
+    _id: string,
     username: string,
     email: string,
     pushed: [string],

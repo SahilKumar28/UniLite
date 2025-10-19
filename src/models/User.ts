@@ -13,15 +13,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    semester: {
+        type: String,
+        enum: ['1', '2', '3', '4', '5', '6', '7', '8'],
+        default: '0'
+    },
     refreshToken: {
         type: String
     },
 
-    pushed: [String],
+    contributed: [mongoose.Schema.Types.ObjectId],
 
-    pulled: [String],
+    pushed: [mongoose.Schema.Types.ObjectId],
 
-    cart: [String]
+    pulled: [mongoose.Schema.Types.ObjectId],
+
+    cart: [mongoose.Schema.Types.ObjectId]
 })
 
 const userModel = mongoose.models.User || mongoose.model("User", userSchema)

@@ -8,9 +8,9 @@ export async function POST(request: Request) {
     await dbConnect()
 
     try {
-        const { otp, email, username, password } = await request.json()
+        const { otp, email, username, password, semester } = await request.json()
 
-        if (!otp || !email || !username || !password ) return Response.json({
+        if (!otp || !email || !username || !password  || !semester) return Response.json({
             success: false,
             message: "Mandatary fields missing"
         }, { status: 200 })
@@ -39,7 +39,9 @@ export async function POST(request: Request) {
             username: username,
             email,
             password: hashedPassword,
+            semester,
             refreshToken: "",
+            contributed: [],
             pushed: [],
             pulled: [],
             cart: []

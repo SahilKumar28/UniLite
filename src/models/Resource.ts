@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { Mongoose } from "mongoose"
 
 const resourceSchema = new mongoose.Schema({
     semester: {
@@ -19,17 +19,17 @@ const resourceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    push: {
-        type: Number,
-        required: true,
-        default: 0
+    contributedBy: {
+        type: mongoose.Schema.Types.ObjectId
     },
-    pull: {
-        type: Number,
-        required: true,
-        default: 0
+
+    pushedBy: {
+        type: [mongoose.Schema.Types.ObjectId],
     },
-}) 
+    pulledBy: {
+        type: [mongoose.Schema.Types.ObjectId],
+    },
+})
 
 resourceSchema.index({ semester: 1, topic: 1 })
 

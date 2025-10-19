@@ -31,6 +31,7 @@ const page = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [otp, setOtp] = useState("")
+    const [semester, setSemester] = useState("")
 
     const [tryingToSignUp, setTryingToSignUp] = useState(false)
     const [tryingToVerifyOtp, setTryingToVerifyOtp] = useState(false)
@@ -43,9 +44,9 @@ const page = () => {
             setTryingToSignUp(true)
             const response = await axios.post("/api/auth/sign-up", { username, email, password })
             if (response.data.success) {
-                
+
                 setShowOtpInput(true)
-                
+
                 setTimeout(() => {
                     setShowOtpInput(false)
                 }, 60000)
@@ -64,8 +65,8 @@ const page = () => {
         e.preventDefault()
         setTryingToVerifyOtp(true)
         try {
-            const response = await axios.post("/api/auth/verify-otp", { otp, username, email, password })
-            
+            const response = await axios.post("/api/auth/verify-otp", { otp, username, email, password, semester })
+
             if (response.data.success) {
                 router.replace(`/auth/sign-in`)
             }
@@ -138,6 +139,16 @@ const page = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="email">Semester</Label>
+                                    <Input
+                                        id="semester"
+                                        type="semester"
+                                        value={semester}
+                                        onChange={(e) => setSemester(e.target.value)}
+                                        required
+                                    />
                                 </div>
                             </div>
                         </CardContent>
