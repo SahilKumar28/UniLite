@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter} from "next/navigation"
+import { useRouter } from "next/navigation"
 import axios from "axios"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
 const page = () => {
 
@@ -98,12 +99,19 @@ const page = () => {
                                 ) : "Sign in"}
                             </Button>
                         </CardFooter>
+                        <div className="bg-white/10 text-white text-center" >
+                            New to UniLite?{" "}
+                            <Link href="/auth/sign-up" className="text-blue-500 underline">
+                                Sign-up
+                            </Link>
+                        </div>
                     </Card>
+
                 </form>
 
             </div>
             <div className=" w-1/2">
-                <RotatingGlobe  />
+                <RotatingGlobe />
             </div>
         </div>
     )

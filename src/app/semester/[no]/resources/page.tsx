@@ -40,10 +40,16 @@ import { AuthContext } from '@/contexts/AuthContext'
 
 const page = () => {
 
+  interface linkType {
+    _id: string,
+    description: string
+    link: string
+    pushedBy: string[]
+    pulledBy: string[]
+  }
 
-  const [links, setLinks] = useState([{ description: 'Learn Binary Search In Depth', link: 'https://ui.shadcn.com/docs/components/alert', pushedBy: [], pulledBy: [] }])
+  const [links, setLinks] = useState<linkType[]>([{ _id: '', description: 'Learn Binary Search In Depth', link: 'https://ui.shadcn.com/docs/components/alert', pushedBy: [], pulledBy: [] }])
   const [switchState, setSwitchState] = useState(Array(links.length).fill(false))
-  const [semester, setSemester] = useState("")
   const [topic, setTopic] = useState("")
   const [description, setDescription] = useState("")
   const [link, setLink] = useState("")
@@ -51,8 +57,10 @@ const page = () => {
   const [fetchingResources, setFetchingResources] = useState(false)
   const [addingResourceMessage, setAddingResourceMessage] = useState("")
   const [requiredTopic, setRequiredTopic] = useState("")
-  const [liked, setLiked] = useState(Array(links.length).fill('0'))
+  const [liked, setLiked] = useState(Array(links.length).fill(0))
   const [shownAddResourceSignedOutAlert, setshownAddResourceSignedOutAlert] = useState(false)
+  const [resourceDocId, setResourceDocId] = useState("")
+
 
   const params = useParams()
   const router = useRouter()
@@ -62,12 +70,60 @@ const page = () => {
   const { user, loading } = useContext(AuthContext)
 
 
-  const handleToggle = (idx: Number) => {
+  const handleToggle = (idx: number) => {
     setSwitchState((prev) => prev.map((val, i) => (i === idx ? !val : val)))
   }
 
-  const handleLikedToggle = (idx: Number, updatedVal: String) => {
-    setLiked((prev) => prev.map((val, i) => i === idx ? updatedVal : val))
+  const handleLikedToggle = async (idx: number, updatedVal: number, action: string) => {
+
+    const currentLink = links[idx]
+    try {
+      if (currentLink && user && action && resourceDocId)
+        setLiked(
+          (prev) => prev.map((val, i) => i === idx ? updatedVal : val)
+        )
+
+      setLinks(prev =>
+        prev.map((val, i) => {
+          if (i !== idx) return val; // leave other items unchanged
+
+          // Make a shallow copy to avoid mutating state directly
+          const newVal = { ...val, pushedBy: [...val.pushedBy], pulledBy: [...val.pulledBy] };
+
+          switch (action) {
+            case "pushUp":
+              newVal.pushedBy.push("");
+              break;
+            case "pushDown":
+              newVal.pushedBy.pop();
+              break;
+            case "pullUp":
+              newVal.pulledBy.push("");
+              break;
+            case "pullDown":
+              newVal.pulledBy.pop();
+              break;
+            case "pushUp&pullDown":
+              newVal.pushedBy.push("");
+              newVal.pulledBy.pop();
+              break;
+            case "pushDown&pullUp":
+              newVal.pushedBy.pop();
+              newVal.pulledBy.push("");
+              break;
+          }
+
+          return newVal;
+        })
+      );
+
+
+
+      const response = await axios.post("/api/resources/actionOnResource", { resourceId: currentLink._id, userId: user?._id, action, resourceDocId })
+    } catch (error) {
+      toast("The action can not be performed. Please try later")
+    }
+
   }
 
   const handleAddResource = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -80,10 +136,9 @@ const page = () => {
 
     setAddingResource(true)
     try {
-      const response = await axios.post("/api/resources/addResource", { semester, topic, description, link, userId: user?._id || "" })
+      const response = await axios.post("/api/resources/addResource", { semester: no, topic, description, link, userId: user?._id || "" })
       if (response.data.success) {
         toast(response.data.message)
-        setSemester("")
         setTopic("")
         setDescription("")
         setLink("")
@@ -103,12 +158,15 @@ const page = () => {
     setFetchingResources(true)
     try {
       const response = await axios.get("/api/resources/getResources", {
-        params: { requiredTopic, no }
+        params: { requiredTopic, no, userId: user?._id }, 
       })
+      setResourceDocId(response.data.requiredTopicDoc._id)
       const linkArray = response.data.requiredTopicDoc.links
+      const actionsDoneInPast = response.data.actionsDoneInPast
+      setLiked(actionsDoneInPast)
+
       setLinks(linkArray)
       setSwitchState(Array(linkArray.length).fill(false))
-      setLiked(Array(linkArray.length).fill('0'))
       if (response.data.success) {
         toast("Resources fetched successfully")
         setRequiredTopic("")
@@ -149,15 +207,6 @@ const page = () => {
               <CardContent>
                 <form onSubmit={handleAddResource}>
                   <div className="flex flex-col gap-6">
-                    <div className="grid gap-2">
-                      <Label>SemesterNo</Label>
-                      <Input
-                        placeholder="3"
-                        required
-                        value={semester}
-                        onChange={(e) => setSemester(e.target.value)}
-                      />
-                    </div>
                     <div className="grid gap-2">
                       <Label>Topic</Label>
                       <Input
@@ -243,24 +292,32 @@ const page = () => {
 
             <div className="flex justify-center items-center gap-3 absolute right-0 top-12 bg-gray-800 rounded-full p-2 shadow-md">
               <Button
-                onClick={() => handleLikedToggle(idx, '1')}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 ${liked[idx] === '1' ? 'bg-green-600 text-white scale-105 shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
+                onClick={() => {
+                  if (liked[idx] === 0) handleLikedToggle(idx, 1, "pushUp")
+                  else if (liked[idx] === 1) handleLikedToggle(idx, 0, "pushDown")
+                  else if (liked[idx] === -1) handleLikedToggle(idx, 1, "pushUp&pullDown")
+                }}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 ${liked[idx] === 1 ? 'bg-green-600 text-white scale-105 shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-green-500 hover:text-white'
                   }`}
               >
                 <ThumbsUp
-                  className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === '1' ? 'scale-125' : 'scale-100'
+                  className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === 1 ? 'scale-125' : 'scale-100'
                     }`}
                 />
                 Push {links[idx].pushedBy.length}
               </Button>
 
               <Button
-                onClick={() => handleLikedToggle(idx, '-1')}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 ${liked[idx] === '-1' ? 'bg-red-600 text-white scale-105 shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
+                onClick={() => {
+                  if (liked[idx] === 0) handleLikedToggle(idx, -1, "pullUp")
+                  else if (liked[idx] === 1) handleLikedToggle(idx, -1, "pushDown&pullUp")
+                  else if (liked[idx] === -1) handleLikedToggle(idx, 0, "pullDown")
+                }}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-200 ${liked[idx] === -1 ? 'bg-red-600 text-white scale-105 shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-red-500 hover:text-white'
                   }`}
               >
                 <ThumbsDown
-                  className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === '-1' ? 'scale-125' : 'scale-100'
+                  className={`w-4 h-4 transition-transform duration-200 ${liked[idx] === -1 ? 'scale-125' : 'scale-100'
                     }`}
                 />
                 Pull {links[idx].pulledBy.length}

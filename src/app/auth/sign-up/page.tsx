@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/input-otp"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 const page = () => {
 
@@ -159,6 +160,12 @@ const page = () => {
                                 ) : "SignUp"}
                             </Button>
                         </CardFooter>
+                        <div className="bg-white/10 text-white text-center" >
+                            ALready Have An Account?{" "}
+                            <Link href="/auth/sign-in" className="text-blue-500 underline">
+                                Sign-in
+                            </Link>
+                        </div>
                     </Card>
                 </form>
 

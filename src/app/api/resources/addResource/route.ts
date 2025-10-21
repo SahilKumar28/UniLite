@@ -35,13 +35,13 @@ export async function POST(request: Request) {
             if(userId) {
                 const user = await userModel.findById(userId)
                 const addedResource = sameTopicExist.links[sameTopicExist.links.length-1]
-                user.contributed.push( { resourceId: sameTopicExist._id, linkId: addedResource._id } )
+                user.contributed.push( { resourceDocId: sameTopicExist._id, resourceId: addedResource._id } )
                 await user.save()
             }
         }
 
         else {
-            const newResource = new resourceModel({
+            const newResourcesDoc = new resourceModel({
                 semester,
                 topic,
                 description,
@@ -55,11 +55,11 @@ export async function POST(request: Request) {
 
             })
 
-            await newResource.save()
+            await newResourcesDoc.save()
             if (userId) {
                 const user = await userModel.findById(userId)
-                const addedResource = newResource.links[0]
-                user.contributed.push({ resourceId: newResource._id, linkId: addedResource._id })
+                const addedResource = newResourcesDoc.links[0]
+                user.contributed.push({ resourceDocId: newResourcesDoc._id, resourceId: addedResource._id })
                 await user.save()
             }
         }

@@ -6,9 +6,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useParams, useRouter } from "next/navigation";
 import { motion } from 'framer-motion'
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { calculateTime } from "@/components/calculateTime";
 import { Button } from "@/components/ui/button";
+import { AuthContext } from "@/contexts/AuthContext";
 
 
 
@@ -16,6 +17,8 @@ import { Button } from "@/components/ui/button";
 export default function innerLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
 
     const params = useParams()
+
+    const {user, loading} = useContext(AuthContext)
 
     const { no } = params
 
@@ -33,8 +36,8 @@ export default function innerLayout({ children, }: Readonly<{ children: React.Re
             href: `/semester/${no}/experiences`
         },
         {
-            title: 'Sign-up',
-            href: '/auth/sign-up'
+            title: loading ? '...' : user ? `Hey, ${user.username}` : 'Sign-in',
+            href: '/auth/sign-in'
         }
     ]
 
