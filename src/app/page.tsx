@@ -1,13 +1,16 @@
 'use client'
 
+import { AuthContext } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { useContext } from 'react'
 
 
 const page = () => {
 
   const router = useRouter()
-
+  const {user, loading} = useContext(AuthContext)
+  
   return (
     <div className=" bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white h-screen m-1 border rounded-2xl mt-0">
 
@@ -30,7 +33,8 @@ const page = () => {
             transition={{ duration: 1, ease: "easeOut", delay: 1.1 }}
             onAnimationComplete={() =>
               setTimeout(() => {
-                router.replace("/semester")
+                if(user) router.push(`/semester/${user.semester}`)
+                else router.push("/semester")
               }, 1000)
             }
           >

@@ -23,6 +23,13 @@ export async function GET(request: Request) {
 
         const requiredTopicDoc = await resourceModel.findOne({ topic: requiredTopic, semester: no })
 
+        if (!requiredTopicDoc) {
+            return Response.json({
+                success: false,
+                message: 'No resources found'
+            }, { status: 200 })
+        }
+
         let actionsDoneInPast: number[] = []
         if (user) {
 
@@ -54,12 +61,7 @@ export async function GET(request: Request) {
         }
         console.log(actionsDoneInPast)
 
-        if (!requiredTopicDoc) {
-            return Response.json({
-                success: false,
-                message: 'No resources found'
-            }, { status: 200 })
-        }
+
 
 
         return Response.json({

@@ -158,22 +158,24 @@ const page = () => {
     setFetchingResources(true)
     try {
       const response = await axios.get("/api/resources/getResources", {
-        params: { requiredTopic, no, userId: user?._id }, 
+        params: { requiredTopic, no, userId: user?._id },
       })
+      if (!response.data.success && response.status === 200) {
+        toast(response.data.message)
+        return
+      }
       setResourceDocId(response.data.requiredTopicDoc._id)
       const linkArray = response.data.requiredTopicDoc.links
       const actionsDoneInPast = response.data.actionsDoneInPast
       setLiked(actionsDoneInPast)
-
       setLinks(linkArray)
       setSwitchState(Array(linkArray.length).fill(false))
       if (response.data.success) {
         toast("Resources fetched successfully")
         setRequiredTopic("")
       }
-      else toast(response.data.message)
     } catch (error) {
-      toast("Ambigious problem while fetching the resource")
+      toast("Ambigious problem while fetching the resource frontend")
     }
     finally {
       setFetchingResources(false)

@@ -9,7 +9,8 @@ interface User {
     username: string,
     email: string,
     pushed: [string],
-    pulled: [string]
+    pulled: [string],
+    semester: number
 }
 
 interface AuthContextType {
