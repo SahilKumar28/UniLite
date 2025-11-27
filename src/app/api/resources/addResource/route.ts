@@ -1,3 +1,4 @@
+import { rearrangeResources } from "@/components/rearrangeResources"
 import dbConnect from "@/lib/dbConnect"
 import resourceModel from "@/models/Resource"
 import userModel from "@/models/User"
@@ -32,12 +33,17 @@ export async function POST(request: Request) {
             sameTopicExist.links.push(newLink)
             await sameTopicExist.save()
 
-            if(userId) {
+            if (userId) {
                 const user = await userModel.findById(userId)
-                const addedResource = sameTopicExist.links[sameTopicExist.links.length-1]
-                user.contributed.push( { resourceDocId: sameTopicExist._id, resourceId: addedResource._id } )
+                const addedResource = sameTopicExist.links[sameTopicExist.links.length - 1]
+                user.contributed.push({ resourceDocId: sameTopicExist._id, resourceId: addedResource._id })
                 await user.save()
             }
+            setImmediate(() => {
+                rearrangeResources(sameTopicExist._id)
+                    .then(res => console.log('✅ Rearranged successfully:', res))
+                    .catch(err => console.error('❌ Rearrangement failed:', err))
+            })
         }
 
         else {
@@ -48,8 +54,8 @@ export async function POST(request: Request) {
                 links: [{
                     link,
                     contributedBy: userId ? userId : undefined,
-                    pushed: [],
-                    pulled: [],
+                    pushedBy: [],
+                    pulledBy: [],
                     description
                 }]
 
@@ -62,6 +68,11 @@ export async function POST(request: Request) {
                 user.contributed.push({ resourceDocId: newResourcesDoc._id, resourceId: addedResource._id })
                 await user.save()
             }
+            setImmediate(() => {
+                rearrangeResources(newResourcesDoc._id)
+                    .then(res => console.log('✅ Rearranged successfully:', res))
+                    .catch(err => console.error('❌ Rearrangement failed:', err))
+            })
         }
 
 

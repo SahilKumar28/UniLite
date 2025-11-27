@@ -7,6 +7,7 @@ export async function POST(request: Request) {
     await dbConnect()
 
     try {
+
         const { username, email, password } = await request.json()
 
         if (!username || !email || !password) return Response.json({
@@ -20,19 +21,19 @@ export async function POST(request: Request) {
             success: false,
             message: "Email already exists"
         }, { status: 200 })
-
         const otp = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000
 
         const emailSent = await sendVerificationEmail(username, String(otp), email)
-
+        
         if (!emailSent) return Response.json({
             success: false,
             message: "Email not sent"
         }, { status: 200 })
-
+        
         const expiry = Date.now() + (5 * 60 * 1000)
-    
-        await redis.set(`otp:${email}`, otp, {ex : 300})
+        
+        await redis.set(`otp:${email}`, otp, { ex: 300 })
+        console.log('hello')
 
 
         return Response.json({

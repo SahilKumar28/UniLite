@@ -37,6 +37,7 @@ import axios from 'axios'
 import { toast } from "sonner"
 import { useParams, useRouter } from 'next/navigation'
 import { AuthContext } from '@/contexts/AuthContext'
+import { rearrangeResources } from '@/components/rearrangeResources'
 
 const page = () => {
 

@@ -1,9 +1,9 @@
 'use client'
 import { AuthContext } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
-import { useContext } from "react"
+import { Children, useContext } from "react"
 
-const layout =  () => {
+const layout = ({ children }: { children: React.ReactNode }) => {
 
     const router = useRouter()
     const { user, loading } = useContext(AuthContext)
@@ -12,9 +12,7 @@ const layout =  () => {
     }
 
     return (
-        <>
-
-        </>
+        <>{children}</>
     )
 }
 

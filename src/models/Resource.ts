@@ -19,7 +19,7 @@ const linksSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-})
+}, {timestamps: true})
 
 const resourceSchema = new mongoose.Schema({
     semester: {
@@ -37,7 +37,7 @@ const resourceSchema = new mongoose.Schema({
         type: [linksSchema]
     }
 
-})
+}, {timestamps: true})
 
 resourceSchema.index({ semester: 1, topic: 1 })
 
